@@ -1,0 +1,121 @@
+{
+  "Header": {
+    "Sign In": "Đăng nhập",
+    "Access": "Truy cập",
+    "Cancel": "Hủy bỏ",
+    "Log out": "Đăng xuất",
+    "Statistics": "Thống kê",
+    "You are not granted access!": "Bạn không được cấp quyền truy cập!",
+    "Investor management": "Nhà quản lý đầu tư",
+    "Transaction management": "Quản lý giao dịch",
+    "Are you sure you want to sign out?": "Bạn chắc chắn muốn đăng xuất không?"
+  },
+  "projectDetail": {
+    "Enter coin name": "Nhập tên đồng coin",
+    "USDT/COIN Rate": "Tỷ giá USDT/COIN",
+    "Coin information": "Thông tin đồng coin",
+    "Edit": "Sửa",
+    "Save": "Lưu",
+    "Add": "Thêm",
+    "Lock": "Khóa",
+    "Cancel": "Hủy bỏ",
+    "Project details": "Chi tiết dự án",
+    "Minimum transferable value": "Giá trị tối thiểu có thể chuyển",
+    "Image": "Hình ảnh",
+    "Basic information": "Thông tin cơ bản",
+    "Staking": "Staking",
+    "Coin Mining Machine": "Máy đào xu",
+    "Coin Machine": "Máy đào xu",
+    "Project Lock": "Khóa dự án",
+    "Project Locks": "Khóa ",
+    "Release": "Phát hành ",
+    "Are you sure you want": "Bạn có chắc chắn muốn ",
+    "this project?": "dự án này không?",
+    "Date created": "Ngày tạo:",
+    "Update day": "Ngày cập nhật:",
+    "Empty": "vui lòng nhập dữ liệu!",
+    "MaxText": "Nội dung quá dài vui lòng nhập ngắn hơn 50 ký tự "
+  },
+  "Home": {
+    "All": "Tất cả",
+    "Blocked": "Đã khóa",
+    "Operating": "Đang hoạt động",
+    "Add project": "Thêm dự án",
+    "Preview": "Thông tin",
+    "Repair": "Sửa"
+  },
+  "Instruct": {
+    "stepOne": {
+      "content1": "Chọn",
+      "content2": "“Đăng nhập bằng Telegram”",
+      "content3": "nếu bạn muốn Đăng ký Tài khoản hoặc Đăng nhập (trong trường hợp bạn đã Đăng ký)."
+    },
+    "stepTwo": {
+      "content1": "Mở Telegram"
+    },
+    "stepThree": {
+      "content1": "Để đăng ký nhấn",
+      "content2": "“/START”",
+      "content3": "sau đó nhấn",
+      "content4": "“Share your phone number”",
+      "content5": "Hệ thống báo bạn đã đăng ký thành công. Nếu tài khoản đã đăng ký bỏ qua bước này."
+    },
+    "stepFour": {
+      "content1": "Để đăng nhập nhấn ",
+      "content2": "“Login”",
+      "content3": "bạn sẽ nhận được đường link để chuyển hướng vào hệ thống trên thiết bị của bạn. Hoặc bạn có thể đăng nhập bằng cách quay lại màn hình đăng nhập và chọn ",
+      "content4": "“Đăng nhập bằng mã OTP”"
+    },
+    "stepFive": {
+      "content1": "Nhập số điện thoại đã được chia sẻ trong Telegram để đảm bảo thông tin chính xác"
+    },
+    "stepSix": {
+      "content1": "Nhận mã OTP đã được hệ thống gửi qua Telegram. Bạn nhập đủ 6 số hệ thống sẽ đăng nhập thành công.",
+      "content2": "Lưu ý: Mã OTP và đường link “Login” chỉ có hiệu lực trong vòng 1 phút, nếu nhập sai mã OTP quá 3 lần tài khoản của bạn sẽ bị khóa tạm thời trong 90p"
+    },
+    "exitTutorial": "Thoát hướng dẫn",
+    "next": "Tiếp Tục"
+  },
+  "Login": {
+    "Send back!": "Gửi lại!",
+    "Sign in with Telegram": "Đăng nhập bằng Telegram",
+    "Sign in with OTP code": "Đăng nhập bằng mã OTP",
+    "Having trouble logging in?": "Bạn gặp khó khăn khi đăng nhập?",
+    "See the instructions": "Xem hướng dẫn",
+    "Get OTP code": "Nhận mã OTP",
+    "Enter your phone number": "Nhập số điện thoại",
+    "Please enter your registered phone number": "Vui lòng nhập số điện thoại đã được đăng ký",
+    "Please enter the OTP that was sent via your Telegram.": "Vui lòng nhập mã OTP đã được gửi qua Telegram của bạn.",
+    "OTP code is valid for": "Mã OTP có hiệu lực trong",
+    "The OTP has expired.": "Mã OTP hết hiệu lực.",
+    "OTP code is incorrect": "OTP code is incorrect",
+    "Incorrect phone number": "Số điện thoại không đúng"
+  },
+  "FormProject": {
+    "Save": "Lưu",
+    "Month": "Tháng",
+    "Day": "Ngày",
+    "Lock": "Khóa",
+    "Unlock": "Mở khóa",
+    "Add": "Thêm",
+    "Add Project": "Thêm dự án",
+    "Name of project": "Tên dự án",
+    "Enter project name": "Nhập tên dự án",
+    "Publisher": "Nhà phát hành",
+    "Enter publisher name": "Nhập tên nhà phát hành",
+    "Language": "Ngôn ngữ",
+    "Vietnamese": "Tiếng việt",
+    "Banner": "Ảnh bìa",
+    "Avatar": "Ảnh Avatar",
+    "Description": "Mô tả",
+    "Website": "Website",
+    "Period": "Kỳ hạn",
+    "Enter value": "Nhập giá trị",
+    "Enter interest rate": "Nhập lãi xuất",
+    "Enter website link": "Nhập link website",
+    "Early withdrawal (%)/year": "Rút trước kỳ hạn(%)/năm",
+    "Maximum value (USDT)": "Giá trị tối đa (USDT)",
+    "Min value/transaction (USDT)": "Giá trị tối thiểu/giao dịch (USDT)",
+    "Interest rate (%)/year": "Lãi xuất (%)/năm"
+  }
+}
