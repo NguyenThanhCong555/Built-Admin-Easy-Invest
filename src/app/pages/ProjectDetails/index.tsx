@@ -1,16 +1,7 @@
-import {
-  Center,
-  Divider,
-  Flex,
-  Image,
-  LoadingOverlay,
-  Modal,
-  Text,
-  createStyles,
-} from '@mantine/core';
+import { Center, Divider, Flex, Image, LoadingOverlay, Modal, Text, createStyles } from '@mantine/core';
 import { NavContainer } from 'app/components/navigation/NavContainer';
 import { images } from 'assets/images';
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { ReactComponent as XCircle } from 'assets/icons/modal/x-circle.svg';
 import { ReactComponent as UsdtCoin } from 'assets/icons/coin/usdt.svg';
 import { FilledButton } from 'app/components/Button/FilledButton';
@@ -25,6 +16,10 @@ import Loading from 'app/components/Loading/Loading';
 import { useDisclosure } from '@mantine/hooks';
 import { conFigE8 } from 'app/components/Maths/conFig-E8';
 import { useTranslation } from 'react-i18next';
+import ModalConfirm from 'app/components/Modal/ModalConfirm';
+import { getTextFromHtmlString } from 'utils/helpers/getTextFromHtmlString';
+import { Helmet } from 'react-helmet-async';
+import ModalCoinNotExist from './components/ModalCoinNotExist';
 interface propsStyle {
   viewMobile: any;
 }
@@ -36,10 +31,7 @@ const ContentDetail = () => {
   return (
     <Flex className="contentDetail">
       <Flex className="totalInfo">
-        <Flex
-          className="AvatarProject"
-          sx={{ backgroundImage: `url(${data.avatar})` }}
-        ></Flex>
+        <Flex className="AvatarProject" sx={{ backgroundImage: `url(${data.avatar})` }}></Flex>
         <Flex className="InfoProject">
           <Flex className="InfoTop">
             <Text className="text1" lineClamp={1}>
@@ -104,45 +96,79 @@ export const ProjectDetails = () => {
   const params = useParams();
   const selector = useSelector(selectResponse);
   const [opened, { open, close }] = useDisclosure(false);
+  const [openedModal, setOpenedModal] = useState<boolean>(false);
 
-  const [checkStateLock, setCheckStateLock] = useState(
-    data.state === 0 ? false : data.state === 1 ? true : false,
-  );
+  const [openModalValidate, setOpenModalValidate] = useState(false);
+  const [checkStateLock, setCheckStateLock] = useState(data.state === 0 ? false : data.state === 1 ? true : false);
   useLayoutEffect(() => {
     dispatch(projectsActions.requestProjectInfo({ userid: params.projectId }));
-    setCheckStateLock(
-      data.state === 0 ? false : data.state === 1 ? true : false,
-    );
-  }, [data.state, checkStateLock]);
+  }, []);
 
   // khoá project
   const lockProject = () => {
-    // console.log(data, 'this is data');
     open();
   };
 
   const onlockPopup = () => {
     setCheckStateLock(!checkStateLock);
-    dispatch(
-      projectsActions.requestLockproject({
-        projectId: params.projectId,
-        isLock: checkStateLock ? 0 : 1,
-      }),
-    );
-    dispatch(projectsActions.requestProjectInfo({ userid: params.projectId }));
+    // Validate intro
+    const introVN = getTextFromHtmlString(data?.intro.VN || '');
+    const introENG = getTextFromHtmlString(data?.intro.ENG || '');
+
+    if (data?.state === 0) {
+      // public -> private (0 - 1)
+      dispatch(
+        projectsActions.requestLockproject({
+          projectId: params.projectId,
+          isLock: checkStateLock ? 0 : 1,
+        }),
+      );
+    } else {
+      if (introVN === '' || introENG === '') {
+        // DO SOMETHING HERE
+        setOpenModalValidate(true);
+      } else {
+        dispatch(
+          projectsActions.requestLockproject({
+            projectId: params.projectId,
+            isLock: checkStateLock ? 0 : 1,
+          }),
+        );
+      }
+    }
+    dispatch(projectsActions.resetCalledFirstProjects());
     close();
   };
   const onCancelPopup = () => {
     close();
   };
+
+  // Reset response when unmounted
+  useEffect(() => {
+    return () => {
+      dispatch(projectsActions.resetResponse());
+    };
+  }, []);
+
+  useEffect(() => {
+    if (selector.error === 10 || selector.error === 11) {
+      setOpenModalValidate(true);
+    }
+  }, [selector]);
+
+  useEffect(() => {
+    setCheckStateLock(data.state === 0 ? false : data.state === 1 ? true : false);
+  }, [data.state]);
   return (
     <>
+      <Helmet>
+        <title>Easy Invest</title>
+        <meta name="description" content="A Boilerplate application homepage" />
+        <link rel="icon" href={`${images.logoEasyInvest3}`} />
+      </Helmet>
       <Loading visible={selector.loading} />
       <Center className={c.boxDetail}>
-        <NavContainer
-          backRole="/home"
-          laberHeader={t('projectDetail.Coin information')}
-        >
+        <NavContainer backRole="/home" laberHeader={t('Helmet.Project Detail')}>
           <Flex className={c.box}>
             <ContentDetail></ContentDetail>
             <InfoStakeCoin></InfoStakeCoin>
@@ -175,12 +201,26 @@ export const ProjectDetails = () => {
               h={46}
               fz={16}
               fw={700}
-              onClick={() => navigate(`/stacking/${params.projectId}`)}
+              onClick={() => navigate(`/stacking/usdt/${params.projectId}`)}
             >
-              {t('projectDetail.Staking')}
+              {t('projectDetail.Staking')} USDT
             </FilledButton>
-            <FilledButton maw={570} w={'100%'} h={46} fz={16} fw={700}>
-              {t('projectDetail.Coin Mining Machine')}
+            <FilledButton
+              maw={570}
+              w={'100%'}
+              h={46}
+              fz={16}
+              fw={700}
+              onClick={() => {
+                if (data.coinInfo?.coin_name) {
+                  navigate(`/stacking/coin/${params.projectId}`);
+                } else {
+                  setOpenedModal(true);
+                }
+              }}
+            >
+              {/* {t('projectDetail.Coin Mining Machine')} */}
+              Staking {data.coinInfo?.coin_name ?? 'Coin'}
             </FilledButton>
             <FilledButton
               onClick={lockProject}
@@ -191,20 +231,14 @@ export const ProjectDetails = () => {
               fz={16}
               fw={700}
               sx={{
-                background: `var(--${
-                  data.state === 1 ? 'secondary-2' : 'white'
-                }) !important`,
+                background: `var(--${data.state === 1 ? 'secondary-2' : 'white'}) !important`,
                 border: '1px solid var(--secondary-2)',
                 '.mantine-1ryt1ht': {
-                  color: `var(--${
-                    data.state === 1 ? 'white' : 'secondary-2'
-                  }) !important`,
+                  color: `var(--${data.state === 1 ? 'white' : 'secondary-2'}) !important`,
                 },
               }}
             >
-              {data.state === 0
-                ? t('projectDetail.Project Lock')
-                : t('projectDetail.Release')}
+              {data.state === 0 ? t('projectDetail.Project Lock') : t('projectDetail.Release')}
             </FilledButton>
             <Modal
               className={c.fixModal}
@@ -225,9 +259,7 @@ export const ProjectDetails = () => {
                 }}
               >
                 {t('projectDetail.Are you sure you want')}
-                {data.state === 0
-                  ? t('projectDetail.Project Locks')
-                  : t('projectDetail.Release')}
+                {data.state === 0 ? t('projectDetail.Project Locks') : t('projectDetail.Release')}
                 {t('projectDetail.this project?')}
               </Text>
               <Flex>
@@ -246,9 +278,7 @@ export const ProjectDetails = () => {
                     fontWeight: 700,
                   }}
                 >
-                  {data.state === 0
-                    ? t('projectDetail.Project Locks')
-                    : t('projectDetail.Release')}
+                  {data.state === 0 ? t('projectDetail.Project Locks') : t('projectDetail.Release')}
                 </FilledButton>
                 <FilledButton
                   onClick={() => onCancelPopup()}
@@ -270,6 +300,19 @@ export const ProjectDetails = () => {
           </Flex>
         </NavContainer>
       </Center>
+
+      <ModalConfirm
+        title={t('FormProject.The project can only be published when full information is provided!')}
+        opened={openModalValidate}
+        onCloseModal={() => setOpenModalValidate(false)}
+        btnLeft={
+          <FilledButton className={c.buttonModal} onClick={() => setOpenModalValidate(false)}>
+            {t('FormProject.Accept')}
+          </FilledButton>
+        }
+      />
+
+      <ModalCoinNotExist opened={openedModal} onCloseModal={() => setOpenedModal(false)} />
     </>
   );
 };
@@ -439,4 +482,7 @@ const createStyleProps = createStyles((theme, params: InPropsStyle) => ({
     },
   },
   fixModal: {},
+  buttonModal: {
+    flex: 1,
+  },
 }));

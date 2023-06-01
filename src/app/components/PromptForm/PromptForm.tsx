@@ -11,13 +11,16 @@ interface PromptFormProps {
 }
 
 const PromptForm = ({ form }: PromptFormProps) => {
+  const { t } = useTranslation();
   const { classes } = makeStyles();
 
   return (
     <ReactRouterPrompt when={form}>
       {({ isActive, onConfirm, onCancel }) => (
         <ModalConfirm
-          title="Các thông tin chưa được lưu. Bạn chắc chắn muốn thoát không?"
+          title={t(
+            'FormProject.The information has not been saved. Are you sure you want to exit ?',
+          )}
           opened={isActive}
           onCloseModal={() => onCancel(isActive)}
           btnLeft={
@@ -25,7 +28,7 @@ const PromptForm = ({ form }: PromptFormProps) => {
               className={classes.button}
               onClick={() => onConfirm(isActive)}
             >
-              Thoát
+              {t('FormProject.Exit')}
             </OutlineButton>
           }
           btnRight={
@@ -33,7 +36,7 @@ const PromptForm = ({ form }: PromptFormProps) => {
               className={classes.button}
               onClick={() => onCancel(isActive)}
             >
-              Hủy bỏ
+              {t('FormProject.Cancel')}
             </FilledButton>
           }
         />

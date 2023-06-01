@@ -9,6 +9,10 @@ import { stakeActions } from '../stacke';
 import { projectsActions } from '../projects';
 import { RESPONSE_SUCCESS_ERROR } from 'constants/common';
 import { PayloadAction } from '@reduxjs/toolkit';
+import { profileActions } from '../profile';
+import { requestActions } from '../request';
+import { systemActions } from '../system';
+import { bankActions } from '../bank';
 
 export function* handleGetOtp(action) {
   try {
@@ -32,13 +36,14 @@ export function* handleLoginByTelegram() {
     const header = {};
     const res = yield call(apiGet, '/ez/getlinklogin', header);
     const { link } = res.data;
-    window.open(link, '_blank');
+
+    setTimeout(() => {
+      window.open(link, '_blank');
+    });
   } catch {}
 }
 
-export function* loginDirectlyByTelegram(
-  action: PayloadAction<{ id: string; token: string }>,
-) {
+export function* loginDirectlyByTelegram(action: PayloadAction<{ id: string; token: string }>) {
   checkDeviceId();
   const body = action.payload;
   const deviceId = getCookie('device_id_iz');
@@ -48,7 +53,6 @@ export function* loginDirectlyByTelegram(
 
   const data = yield call(apiPost, url, body, null);
 
-  console.log(data);
   if (data.error === RESPONSE_SUCCESS_ERROR) {
     yield put(
       authActions.loginByOtp({
@@ -57,12 +61,17 @@ export function* loginDirectlyByTelegram(
         username: data.data.username,
         refreshToken: data.data.refresh_token,
         refreshToken_time: data.data.token_exp_time,
+        role: data.data.role,
+        status: data.data.status,
       }),
     );
+
+    // update version store
+    const systemStore = getLocalStorage('persist:admin', '_persist');
+    if (systemStore) yield put(systemActions.setVersion(systemStore.version));
   }
-  yield put(
-    authActions.setResponseUser({ error: data.error, message: data.message }),
-  );
+
+  yield put(authActions.setResponseUser({ error: data.error, message: data.message }));
 }
 
 export function* handleLoginByOtp(action) {
@@ -70,22 +79,17 @@ export function* handleLoginByOtp(action) {
     checkDeviceId();
     const deviceId = getCookie('device_id_iz');
     const sessionInfo = window.navigator.userAgent;
-    console.log(deviceId);
-    console.log(sessionInfo);
+
     const header = {};
     const { numberphone, otp } = action.payload;
     const body = {
       otp: otp,
       numberphone: numberphone,
     };
-    const res = yield call(
-      apiPost,
-      `/ez/loginbyotp?device_id=${deviceId}&session_info=${sessionInfo}`,
-      body,
-      header,
-    );
+    const res = yield call(apiPost, `/ez/loginbyotp?device_id=${deviceId}&session_info=${sessionInfo}`, body, header);
     const { error, data, message } = res;
-    if (error === 0 && data.role === 1) {
+
+    if (error === 0 && (data.role === 1 || data.role === 2)) {
       yield put(
         authActions.loginByOtp({
           id: data.id,
@@ -93,10 +97,18 @@ export function* handleLoginByOtp(action) {
           username: data.username,
           refreshToken: data.refresh_token,
           refreshToken_time: data.token_exp_time,
+          role: data.role,
+          status: data.status,
         }),
       );
+
+      // update version store
+      const systemStore = getLocalStorage('persist:admin', '_persist');
+
+      if (systemStore) yield put(systemActions.setVersion(systemStore.version));
+
       yield History.push('/home');
-    } else if (error === 12 || error === 10) {
+    } else if (error === 12 || error === 10 || error === 16) {
       yield put(
         authActions.loginByOtpFail({
           login: {
@@ -126,22 +138,20 @@ export function* handleLogout() {
       yield put(authActions.logoutSuccess());
       yield put(stakeActions.resetStakeAll());
       yield put(projectsActions.resetProjectsAll());
+      yield put(profileActions.resetAllFieldOfProfile());
+      yield put(requestActions.resetAllFieldRequest());
+      yield put(systemActions.resetFieldOfSytemAll());
+      yield put(bankActions.resetAllOfFieldBank());
       yield History.push('/');
     }
   } catch {}
 }
 export function* authSaga() {
   yield takeLatest(authActions.requestGetOtp.type, handleGetOtp);
-  yield takeLatest(
-    authActions.requestLoginByTelegram.type,
-    handleLoginByTelegram,
-  );
+  yield takeLatest(authActions.requestLoginByTelegram.type, handleLoginByTelegram);
   yield takeLatest(authActions.requestLoginByOtp.type, handleLoginByOtp);
   yield takeLatest(authActions.requestLogout.type, handleLogout);
 
   // login by telegram
-  yield takeLatest(
-    authActions.requestLoginDirectlyTelegram.type,
-    loginDirectlyByTelegram,
-  );
+  yield takeLatest(authActions.requestLoginDirectlyTelegram.type, loginDirectlyByTelegram);
 }

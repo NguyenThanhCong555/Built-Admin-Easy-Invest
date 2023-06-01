@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -13,6 +13,8 @@ import { LoginLayout } from '../../components/Layout/LoginLayout';
 import { FilledButton } from 'app/components/Button/FilledButton';
 import { SubtleButton } from 'app/components/Button/SubtleButton';
 import { ReactComponent as Arrow } from 'assets/icons/loginPage/arrow-narrow-left.svg';
+import ModalLockAccount from 'app/components/Modal/ModalLockAccount';
+import { RESPONSE_ERROR_LOCKED_ACCOUNT } from 'constants/account';
 
 export const Telephone = () => {
   const dispatch = useDispatch();
@@ -27,6 +29,19 @@ export const Telephone = () => {
   const [code, setCode] = useState<number>(84);
 
   // Function
+  useEffect(() => {
+    const handleKeyDown = event => {
+      if (event.keyCode === 13) {
+        handleGetOtp();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [phone]); // Chỉ thực hiện addEventListener lại khi value thay đổi
+
   const handleGetOtp = () => {
     dispatch(authActions.requestGetOtp(code + clearZeroNumber(phone)));
   };
@@ -53,60 +68,61 @@ export const Telephone = () => {
       }
     };
   }, []);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   return (
-    <LoginLayout>
-      <SubtleButton className={classes.backBtn} onClick={() => navigate('/')}>
-        <Arrow />
-      </SubtleButton>
-      <Stack className={classes.content}>
-        <Flex className={classes.telephone}>
-          <Country onCode={setCode} />
-          <Center className={classes.areaCode}>
-            <Text className="body_6-regular">+{code}</Text>
-          </Center>
-          <input
-            type="number"
-            value={phone}
-            onChange={handleChangePhone}
-            onKeyDown={e => handleOnKeyDown(e)}
-            onFocus={handleFocus}
-            className={cx(
-              'body_2-medium',
-              classes.input,
-              login.error === 5 ? 'error' : '',
-            )}
-            placeholder={t('Login.Enter your phone number')}
-          />
-        </Flex>
-        {login.error === 0 || login.error === 12 || login.error === 10 ? (
-          <OtpInput
-            phone={code + clearZeroNumber(phone)}
-            onSendBack={handleGetOtp}
-          />
-        ) : (
-          <>
-            <Text
-              className={cx(
-                'small_3-regular',
-                classes.tutorial,
-                login.error === 5 ? 'error' : '',
-              )}
-            >
-              {login.error === 5
-                ? t('Login.Incorrect phone number')
-                : phone
-                ? t('Login.Please enter your registered phone number')
-                : ''}
-            </Text>
-            <Group className={classes.groupBtn}>
-              <FilledButton className={classes.getBtn} onClick={handleGetOtp}>
-                {t('Login.Get OTP code')}
-              </FilledButton>
-            </Group>
-          </>
-        )}
-      </Stack>
-    </LoginLayout>
+    <>
+      <ModalLockAccount opened={login.error === RESPONSE_ERROR_LOCKED_ACCOUNT} type={0} />
+
+      <LoginLayout>
+        <SubtleButton className={classes.backBtn} onClick={() => navigate('/')}>
+          <Arrow />
+        </SubtleButton>
+        <Stack className={classes.content}>
+          <Flex className={classes.telephone}>
+            <Country onCode={setCode} />
+            <Center className={classes.areaCode}>
+              <Text className="body_6-regular">+{code}</Text>
+            </Center>
+            <input
+              type="number"
+              value={phone}
+              ref={inputRef}
+              onChange={handleChangePhone}
+              onKeyDown={e => handleOnKeyDown(e)}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              onFocus={handleFocus}
+              className={cx('body_2-medium', classes.input, login.error === 5 ? 'error' : '')}
+              placeholder={t('Login.Enter your phone number')}
+            />
+          </Flex>
+          {login.error === 0 || login.error === 12 || login.error === 10 ? (
+            <OtpInput phone={code + clearZeroNumber(phone)} onSendBack={handleGetOtp} />
+          ) : (
+            <>
+              <Text className={cx('small_3-regular', classes.tutorial, login.error === 5 ? 'error' : '')}>
+                {login.error === 5
+                  ? t('Login.Incorrect phone number')
+                  : phone
+                  ? t('Login.Please enter your registered phone number')
+                  : ''}
+              </Text>
+              <Group className={classes.groupBtn}>
+                <FilledButton className={classes.getBtn} onClick={handleGetOtp}>
+                  {t('Login.Get OTP code')}
+                </FilledButton>
+              </Group>
+            </>
+          )}
+        </Stack>
+      </LoginLayout>
+    </>
   );
 };
 

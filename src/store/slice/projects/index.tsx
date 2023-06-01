@@ -4,8 +4,8 @@ import { createSlice } from 'utils/@reduxjs/toolkit';
 
 export const initialState: ProjectsState = {
   projects: [],
-  filterProjects: [],
   calledFirstProjects: false,
+  type: 0,
 
   project: {
     id: -1,
@@ -39,34 +39,13 @@ const slice = createSlice({
   name: 'projects',
   initialState,
   reducers: {
-    filterProject(state: ProjectsState, action: PayloadAction<any>) {
-      switch (Number(action.payload.select)) {
-        case 0:
-          const filterDataUnlock = state.projects.filter(
-            (item, _) => item.state === 0,
-          );
-          state.filterProjects = filterDataUnlock;
-          break;
-        case 1:
-          const filterDataLock = state.projects.filter(
-            (item, _) => item.state === 1,
-          );
-          state.filterProjects = filterDataLock;
-          break;
-        default:
-          state.filterProjects = state.projects;
-          break;
-      }
-    },
     requestGetAllProjects(state: ProjectsState) {
       state.response.loading = true;
     },
     responseGetAllProjects(state: ProjectsState, action: PayloadAction<any>) {
-      state.projects = action.payload.data.projects;
-      state.filterProjects = action.payload.data.projects;
+      state.projects = action.payload?.data?.projects;
 
-      //
-      state.calledFirstProjects = false;
+      if (action.payload?.data?.projects) state.calledFirstProjects = true;
       state.response.loading = false;
       state.response.message = action.payload.message;
       state.response.error = action.payload.error;
@@ -82,32 +61,40 @@ const slice = createSlice({
 
     requestLockproject(state: ProjectsState, action: PayloadAction<any>) {
       state.isProjectChange = false;
+      state.response.loading = true;
     },
 
-    requestAddInfoCoin(state: ProjectsState, action: PayloadAction<any>) {
-      // console.log(action.payload.project_id, 'this is form add in redux');
+    responseLockProject(state: ProjectsState, action: PayloadAction<any>) {
+      state.response.error = action.payload.error;
+      state.response.message = action.payload.message;
+      state.response.loading = false;
+
+      if (action.payload.error === 0) {
+        if (Number(action.payload.state) === 0) {
+          state.project.state = 0;
+        } else {
+          state.project.state = 1;
+        }
+      }
     },
-    responseAddInfoCoin(state: ProjectsState, action: PayloadAction<any>) {
-      // console.log(action.payload.project_id, 'this is form add in redux');
-    },
+
+    requestAddInfoCoin(state: ProjectsState, action: PayloadAction<any>) {},
+    responseAddInfoCoin(state: ProjectsState, action: PayloadAction<any>) {},
 
     requestEditInfoCoin(state: ProjectsState, action: PayloadAction<any>) {
-      console.log('hi');
+      // state.response.loading = true;
     },
 
+    responseEditInfoCoin(state: ProjectsState, action: PayloadAction<any>) {
+      // state.response.loading = false;
+    },
     ifdataisduplicated(state: ProjectsState, action: PayloadAction<any>) {},
 
     responseDublicated(state: ProjectsState, action: PayloadAction<any>) {
-      console.log(action.payload, 'form redux');
       state.project.dataIsDuplicated = action.payload;
     },
 
-    responseEditInfoCoin(state: ProjectsState, action: PayloadAction<any>) {},
-
-    requestChangeInfoCoin(state: ProjectsState, action: PayloadAction<any>) {
-      // state.response.loading = true;
-      // console.log(action.payload, 'this is form update in redux');
-    },
+    requestChangeInfoCoin(state: ProjectsState, action: PayloadAction<any>) {},
 
     requestCreateProject(state: ProjectsState, action: PayloadAction<any>) {
       state.response.loading = true;
@@ -128,7 +115,14 @@ const slice = createSlice({
       state.response.error = action.payload.error;
     },
 
-    // Rest
+    changeStatus(state: ProjectsState, action: PayloadAction<any>) {
+      state.type = Number(action.payload.type);
+    },
+
+    // Reset
+    resetCalledFirstProjects(state: ProjectsState) {
+      state.calledFirstProjects = false;
+    },
     resetIsProjectChange(state: ProjectsState) {
       state.isProjectChange = false;
     },

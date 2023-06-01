@@ -18,6 +18,8 @@ export interface AuthState {
   token: string;
   refreshToken: string;
   refreshToken_time: number;
+  role: number;
+  status: number;
   username: string;
   language: string;
   isLogin: boolean;

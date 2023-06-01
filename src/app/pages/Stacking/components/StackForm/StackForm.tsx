@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useLayoutEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Variants, motion } from 'framer-motion';
 import { useForm } from '@mantine/form';
@@ -9,11 +9,12 @@ import { Flex, Text, TextInput, createStyles, Select } from '@mantine/core';
 import { media } from 'styles/media';
 import { ReactComponent as CaretDown } from 'assets/icons/arrow/caret-down.svg';
 import { FilledButton } from 'app/components/Button/FilledButton';
-import { apiPost } from 'utils/http/request';
+import { apiPost, apiPostV2 } from 'utils/http/request';
 import { selectAuth } from 'store/slice/auth/selectors';
 import Loading from 'app/components/Loading/Loading';
 import { stakeActions } from 'store/slice/stacke';
 import { ProductState } from 'store/slice/stacke/type';
+import { selectStake } from 'store/slice/stacke/selectors';
 
 const stackFormVariants: Variants = {
   hidden: {
@@ -35,30 +36,57 @@ interface Props {
   data?: ProductState;
   isRepair: boolean;
   onOpen?: Dispatch<SetStateAction<boolean>>;
+  setIsEmpty?: Dispatch<SetStateAction<boolean>>;
+  type: number;
 }
 
-const StackForm = ({ isShow, projectId, data, isRepair, onOpen }: Props) => {
+const StackForm = ({ setIsEmpty, isShow, projectId, data, isRepair, onOpen, type }: Props) => {
+  const { t } = useTranslation();
+  const { cx, classes } = makeStyles();
+  const defaultArray = ['30', '60', '90'];
+
   const dispatch = useDispatch();
   const { id, token } = useSelector(selectAuth);
 
-  const { t } = useTranslation();
-  const { cx, classes } = makeStyles();
+  const { products } = useSelector(selectStake);
+  const [monthArray, setMonthArray] = useState(
+    defaultArray.map((item, _) => ({
+      value: item,
+      label: item + t('FormProject.Day'),
+    })),
+  );
 
-  const monthArray = [
-    {
-      value: '30',
-      label: '30 ' + t('FormProject.Day'),
-    },
-    {
-      value: '60',
-      label: '60 ' + t('FormProject.Day'),
-    },
-    {
-      value: '90',
-      label: '90 ' + t('FormProject.Day'),
-    },
-  ];
   const [day, setDay] = useState<string>('30');
+
+  useLayoutEffect(() => {
+    const dataTime = products?.find((item, _) => item.project_id === projectId);
+    if (dataTime) {
+      const dataType = dataTime?.data?.filter((item, _) => item?.type === type);
+      const listTimeFrame = dataType?.map((item, _) => JSON.stringify(item?.timeframe / 86400000));
+
+      const result: string[] = [];
+      for (let i = 0; i < defaultArray.length; i++) {
+        if (!listTimeFrame.includes(defaultArray[i])) {
+          result.push(defaultArray[i]);
+        }
+      }
+
+      if (!isRepair) {
+        if (result.length === 0) setIsEmpty?.(true);
+      } else {
+        const timeFrame = JSON.stringify((data?.timeframe as number) / 86400000);
+        result.push(timeFrame);
+        result.sort();
+      }
+      setMonthArray(
+        result.map((item, _) => ({
+          value: item,
+          label: item + t('FormProject.Day'),
+        })),
+      );
+      setDay(result[0]);
+    }
+  }, [products, data]);
 
   const form = useForm({
     initialValues: {
@@ -95,8 +123,11 @@ const StackForm = ({ isShow, projectId, data, isRepair, onOpen }: Props) => {
     const newValue = e.target.value.replace(/[^0-9.]/g, '');
     e.target.value = newValue;
   }
+
+  // type = 0 - usdt to usdt
+  // type = 1 - coin to coin
   const handleFetchAddStack = () => {
-    const response = apiPost(
+    const response: any = apiPostV2(
       '/ez/stake/admin/create',
       {
         project_id: projectId,
@@ -106,11 +137,9 @@ const StackForm = ({ isShow, projectId, data, isRepair, onOpen }: Props) => {
         interest_rate_before: form.values.interest_rate_before,
         timeframe: Number(day) * 86400000,
         description: {},
+        type: type,
       },
-      {
-        userid: id,
-        token: token,
-      },
+      null,
     );
     return response;
   };
@@ -120,8 +149,7 @@ const StackForm = ({ isShow, projectId, data, isRepair, onOpen }: Props) => {
     queryFn: handleFetchAddStack,
     enabled: false,
     onSuccess(result) {
-      const { error, data } = result;
-      console.log(result);
+      const { error, data } = result.data;
       if (error === 0) {
         form.reset();
         dispatch(
@@ -140,7 +168,7 @@ const StackForm = ({ isShow, projectId, data, isRepair, onOpen }: Props) => {
   });
 
   const handleFetchRepairStack = () => {
-    const response = apiPost(
+    const response: any = apiPostV2(
       '/ez/stake/admin/update',
       {
         id: data?.id,
@@ -152,11 +180,9 @@ const StackForm = ({ isShow, projectId, data, isRepair, onOpen }: Props) => {
         timeframe: Number(day) * 86400000,
         description: {},
         status: data?.status,
+        type: type,
       },
-      {
-        userid: id,
-        token: token,
-      },
+      null,
     );
     return response;
   };
@@ -166,7 +192,7 @@ const StackForm = ({ isShow, projectId, data, isRepair, onOpen }: Props) => {
     queryFn: handleFetchRepairStack,
     enabled: false,
     onSuccess(result) {
-      const { error, data } = result;
+      const { error, data } = result.data;
       if (error === 0) {
         onOpen?.(false);
         dispatch(
@@ -188,7 +214,6 @@ const StackForm = ({ isShow, projectId, data, isRepair, onOpen }: Props) => {
       <form
         onSubmit={form.onSubmit(() => {
           if (isRepair) {
-            console.log(1);
             repairQuery.refetch();
           } else {
             addQuery.refetch();
@@ -203,9 +228,7 @@ const StackForm = ({ isShow, projectId, data, isRepair, onOpen }: Props) => {
           className={classes.container}
         >
           <Flex className={classes.wrap}>
-            <Text className={cx('small_2-medium', classes.label)}>
-              {t('FormProject.Min value/transaction (USDT)')}
-            </Text>
+            <Text className={cx('small_2-medium', classes.label)}>{t('FormProject.Min value/transaction (USDT)')}</Text>
             <TextInput
               classNames={{
                 root: classes.rootInput,
@@ -218,9 +241,7 @@ const StackForm = ({ isShow, projectId, data, isRepair, onOpen }: Props) => {
             />
           </Flex>
           <Flex className={classes.wrap}>
-            <Text className={cx('small_2-medium', classes.label)}>
-              {t('FormProject.Maximum value (USDT)')}
-            </Text>
+            <Text className={cx('small_2-medium', classes.label)}>{t('FormProject.Maximum value (USDT)')}</Text>
             <TextInput
               classNames={{
                 root: classes.rootInput,
@@ -258,9 +279,7 @@ const StackForm = ({ isShow, projectId, data, isRepair, onOpen }: Props) => {
             />
           </Flex>
           <Flex className={classes.wrap}>
-            <Text className={cx('small_2-medium', classes.label)}>
-              {t('FormProject.Early withdrawal (%)/year')}
-            </Text>
+            <Text className={cx('small_2-medium', classes.label)}>{t('FormProject.Early withdrawal (%)/year')}</Text>
             <TextInput
               classNames={{
                 root: classes.rootInput,

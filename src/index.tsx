@@ -33,6 +33,8 @@ import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 
 import { PersistGate } from 'redux-persist/integration/react';
 import Directional from 'app/components/Directional/Directional';
+import 'styles/font.css';
+import { ErrorBoundary } from 'shared/ErrorBoudary';
 
 const client = new QueryClient();
 const root = ReactDOM.createRoot(
@@ -48,7 +50,9 @@ root.render(
           <MantineProvider withGlobalStyles withNormalizeCSS>
             <BrowserRouter>
               <Directional />
-              <App />
+              <ErrorBoundary>
+                <App />
+              </ErrorBoundary>
               <GlobalStyle />
             </BrowserRouter>
           </MantineProvider>

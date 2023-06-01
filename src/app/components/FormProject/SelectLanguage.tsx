@@ -7,9 +7,10 @@ import { ReactComponent as IconDown } from 'assets/icons/homePage/caret-down.svg
 interface SelectLanguageProps {
   value: string | null;
   onSelect: any;
+  error: any;
 }
 
-const SelectLanguage = ({ value, onSelect }: SelectLanguageProps) => {
+const SelectLanguage = ({ error, value, onSelect }: SelectLanguageProps) => {
   const { t } = useTranslation();
   const { classes } = makeStyles();
   return (
@@ -20,6 +21,7 @@ const SelectLanguage = ({ value, onSelect }: SelectLanguageProps) => {
         rightSection: classes.rightSection,
       }}
       label={t('FormProject.Language')}
+      error={error}
       withAsterisk
       value={value}
       onChange={e => {

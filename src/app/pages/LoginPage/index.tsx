@@ -26,8 +26,9 @@ export const LoginPage = () => {
   return (
     <>
       <Helmet>
-        <title>LoginPage</title>
+        <title>Easy Invest</title>
         <meta name="description" content="A Boilerplate application homepage" />
+        <link rel="icon" href={`${images.logoEasyInvest3}`} />
       </Helmet>
       <LoginLayout>
         <Box className={classes.languages}>

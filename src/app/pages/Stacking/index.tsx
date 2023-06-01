@@ -11,12 +11,14 @@ import { ReactComponent as ArrowLeft } from 'assets/icons/loginPage/arrow-narrow
 import { FilledButton } from 'app/components/Button/FilledButton';
 import StackForm from './components/StackForm/StackForm';
 import StackPackage from './components/StackPackage/StackPackage';
-import { apiGet } from 'utils/http/request';
+import { apiGet, apiGetV2 } from 'utils/http/request';
 import { selectAuth } from 'store/slice/auth/selectors';
 import Loading from 'app/components/Loading/Loading';
 import { stakeActions } from 'store/slice/stacke';
 import { selectStake } from 'store/slice/stacke/selectors';
 import Repair from './components/Repair/Repair';
+import { selectProject } from 'store/slice/projects/selectors';
+import { projectsActions } from 'store/slice/projects';
 
 export const StackingPage = () => {
   const dispatch = useDispatch();
@@ -24,9 +26,12 @@ export const StackingPage = () => {
   const { projectId } = useParams();
   const { id, token } = useSelector(selectAuth);
   const { stakeChangeId, products } = useSelector(selectStake);
+  const projectData = useSelector(selectProject);
 
   const { t } = useTranslation();
   const { cx, classes } = makeStyles();
+
+  const [isEmpty, setIsEmpty] = useState(false);
 
   const [isShow, setIsShow] = useState<boolean>(false);
   const [stackList, setStackList] = useState<any[]>([]);
@@ -41,77 +46,71 @@ export const StackingPage = () => {
   };
 
   const handleFetchStackList = () => {
-    const response = apiGet(`/ez/stake/admin/getlist?project_id=${projectId}`, {
-      userid: id,
-      token: token,
-    });
+    const response: any = apiGetV2(`/ez/stake/admin/getlist?project_id=${projectId}`, null);
     return response;
   };
   const { isFetching } = useQuery({
     queryKey: ['handleFetchStackList'],
     queryFn: handleFetchStackList,
-    enabled:
-      stakeChangeId === projectId ||
-      !products?.find(product => product.project_id === projectId),
+    enabled: stakeChangeId === projectId || !products?.find(product => product.project_id === projectId),
     onSuccess(result) {
-      const { data, error } = result;
+      const { data: dataResponse, error } = result.data;
       if (error === 0) {
         dispatch(
           stakeActions.getStakeOfEachProject({
-            products: data,
+            products: dataResponse,
             projectId: projectId,
           }),
         );
         if (stakeChangeId === projectId) {
           dispatch(stakeActions.resetStakeChangeId());
         }
+        const data = dataResponse?.filter((item, _) => item?.type === 0);
         setStackList(data);
       }
     },
   });
   useEffect(() => {
-    const newStakeList = products?.find(
-      product => product.project_id === projectId,
-    );
-    setStackList(newStakeList?.data);
+    const newStakeList = products?.find(product => product.project_id === projectId);
+    const data = newStakeList?.data?.filter((item, _) => item?.type === 0);
+    setStackList(data);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
+
+  useEffect(() => {
+    if (projectData?.id === Number(projectId)) return;
+    dispatch(projectsActions.requestProjectInfo({ userid: projectId }));
+  }, [projectId]);
+
   return (
-    <NavContainer isbackpage={true} laberHeader="Play Together">
+    <NavContainer isbackpage={true} laberHeader={projectData?.name}>
       <Loading visible={isFetching} />
       <div className={classes.wrapper}>
         <div className={classes.content}>
           <Flex className={classes.header}>
-            <SubtleButton
-              className={classes.backBtn}
-              onClick={() => navigate(`/project-details/${projectId}`)}
-            >
+            <SubtleButton className={classes.backBtn} onClick={() => navigate(`/project-details/${projectId}`)}>
               <ArrowLeft />
             </SubtleButton>
-            <Text className="body_2-medium">Stacking</Text>
+            <Text className="body_2-medium">Stacking USDT</Text>
           </Flex>
-          <StackForm isShow={isShow} projectId={projectId} isRepair={false} />
-          {!isShow && (
-            <FilledButton
-              className={classes.addBtn}
-              onClick={handleShowStackForm}
-            >
-              {t('FormProject.Add')}
-            </FilledButton>
+          {!isEmpty && (
+            <>
+              <StackForm isShow={isShow} projectId={projectId} isRepair={false} setIsEmpty={setIsEmpty} type={0} />
+              {!isShow && (
+                <FilledButton className={classes.addBtn} onClick={handleShowStackForm}>
+                  {t('FormProject.Add')}
+                </FilledButton>
+              )}
+            </>
           )}
         </div>
         <Stack className={classes.stackings}>
           {stackList?.map(stake => (
-            <StackPackage
-              key={stake.id}
-              data={stake}
-              onRepair={setIsModal}
-              setActiveId={setActiveId}
-            />
+            <StackPackage key={stake.id} data={stake} onRepair={setIsModal} setActiveId={setActiveId} />
           ))}
         </Stack>
       </div>
-      <Repair isOpen={isModal} onOpen={setIsModal} activeId={activeId} />
+      <Repair isOpen={isModal} onOpen={setIsModal} activeId={activeId} type={0} />
     </NavContainer>
   );
 };
@@ -135,6 +134,8 @@ const makeStyles = createStyles(() => ({
   backBtn: {
     position: 'absolute',
     left: 0,
+    height: '100% !important',
+    zIndex: 10000000,
   },
   addBtn: {
     width: '100%',

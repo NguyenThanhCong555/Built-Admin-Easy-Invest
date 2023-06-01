@@ -5,3 +5,4 @@ export const INVALID_VALUE_PHONE = 10;
 //login by OTP
 export const RESPONSE_ERROR_EXPIRED_OTP = 10;
 export const RESPONSE_ERROR_INVALID_OTP = 12;
+export const RESPONSE_ERROR_LOCKED_ACCOUNT = 16;

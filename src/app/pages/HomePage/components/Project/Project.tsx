@@ -29,10 +29,7 @@ const Project = memo(({ data, projectId }: Props) => {
   };
 
   function navigateToPreview() {
-    window.open(
-      `https://share.vietdefi.work/projects/detail/${projectId}`,
-      '_blank',
-    );
+    window.open(`https://share.vietdefi.work/projects/${projectId}?target=information&mode=preview`, '_blank');
   }
 
   return (
@@ -45,7 +42,7 @@ const Project = memo(({ data, projectId }: Props) => {
       <Avatar src={data?.avatar} className={classes.avatar} />
       <Stack className={classes.content}>
         <div>
-          <Text lineClamp={1} className="subtitle_4-bold">
+          <Text lineClamp={1} className={cx('subtitle_4-bold', classes.nameProject)}>
             {data?.name}
           </Text>
           <Text lineClamp={1} className="small_6-regular">
@@ -53,22 +50,14 @@ const Project = memo(({ data, projectId }: Props) => {
           </Text>
         </div>
         <Flex className={classes.usdtWrap}>
-          <Text className={cx('body_4-bold', classes.money)}>
-            {formatCoinUS(data?.total_invested)}
-          </Text>
+          <Text className={cx('body_4-bold', classes.money)}>{formatCoinUS(data?.total_invested)}</Text>
           <USDT />
         </Flex>
         <Flex className={classes.groupBtn}>
-          <OutlineButton
-            className={classes.projectBtn}
-            onClick={navigateToPreview}
-          >
+          <OutlineButton className={classes.projectBtn} onClick={navigateToPreview}>
             {t('Home.Preview')}
           </OutlineButton>
-          <FilledButton
-            onClick={() => toInfoProject()}
-            className={classes.projectBtn}
-          >
+          <FilledButton onClick={() => toInfoProject()} className={classes.projectBtn}>
             {t('Home.Repair')}
           </FilledButton>
         </Flex>
@@ -89,7 +78,6 @@ const makeStyles = createStyles((theme, { data }: any) => ({
     border: '1px solid var(--grey-light)',
     boxShadow: 'var(--shadow-hover)',
     position: 'relative',
-    cursor: 'pointer',
     backgroundColor: data.state === 1 ? 'rgba(234, 234, 234, 0.8)' : '#FFFFFF',
     [`${media.small()}`]: {
       maxWidth: '100%',
@@ -121,5 +109,9 @@ const makeStyles = createStyles((theme, { data }: any) => ({
   },
   money: {
     color: 'var(--primary-2)',
+  },
+
+  nameProject: {
+    paddingRight: 25,
   },
 }));

@@ -10,10 +10,11 @@ import { FilledButton } from 'app/components/Button/FilledButton';
 import { media } from 'styles/media';
 import { ProductState } from 'store/slice/stacke/type';
 import { formatCoinUS } from 'utils/helpers/formatCoinUs';
-import { apiPost } from 'utils/http/request';
+import { apiPost, apiPostV2 } from 'utils/http/request';
 import { selectAuth } from 'store/slice/auth/selectors';
 import { stakeActions } from 'store/slice/stacke';
 import Loading from 'app/components/Loading/Loading';
+import { numberWithCommas } from 'utils/helpers/formatNumberWithCommas';
 
 interface Props {
   data?: ProductState;
@@ -29,17 +30,13 @@ const StackPackage = memo(({ data, onRepair, setActiveId }: Props) => {
   const { cx, classes } = makeStyles();
 
   const handleFetchLockStack = stakeId => {
-    console.log(stakeId);
-    const response = apiPost(
+    const response: any = apiPostV2(
       '/ez/stake/admin/update',
       {
         id: stakeId,
         status: !data?.status,
       },
-      {
-        userid: id,
-        token: token,
-      },
+      null,
     );
     return response;
   };
@@ -49,8 +46,7 @@ const StackPackage = memo(({ data, onRepair, setActiveId }: Props) => {
     queryFn: () => handleFetchLockStack(data?.id),
     enabled: false,
     onSuccess(result) {
-      const { error, data } = result;
-      console.log(data);
+      const { error, data } = result.data;
       if (error === 0) {
         dispatch(
           stakeActions.setLockStake({
@@ -72,9 +68,9 @@ const StackPackage = memo(({ data, onRepair, setActiveId }: Props) => {
     <Card className={cx(classes.container, data?.status === 0 ? '' : 'unlock')}>
       <Loading visible={lockQuery.isFetching} />
       <Text className={cx('subtitle_4-bold', classes.name)}>
-        Tích lũy {Number(data?.timeframe) / 86400000} ngày -{' '}
-        {data?.interest_rate}
-        %/năm
+        {t('FormProject.Accumulate')} {Number(data?.timeframe) / 86400000}{' '}
+        {t('FormProject.Day')}- {data?.interest_rate}
+        %/{t('FormProject.Year')}
       </Text>
       <div className={classes.content}>
         <Flex className={classes.wrap}>
@@ -83,7 +79,7 @@ const StackPackage = memo(({ data, onRepair, setActiveId }: Props) => {
           </Text>
           <Center className={classes.valueWrap}>
             <Text className={cx('body_1-bold', classes.value)}>
-              {formatCoinUS(data?.min_stake)}
+              {numberWithCommas(String(data?.min_stake))}
             </Text>
           </Center>
         </Flex>
@@ -93,7 +89,7 @@ const StackPackage = memo(({ data, onRepair, setActiveId }: Props) => {
           </Text>
           <Center className={classes.valueWrap}>
             <Text className={cx('body_1-bold', classes.value)}>
-              {formatCoinUS(data?.max_stake)}
+              {numberWithCommas(String(data?.max_stake))}
             </Text>
           </Center>
         </Flex>
@@ -103,7 +99,7 @@ const StackPackage = memo(({ data, onRepair, setActiveId }: Props) => {
           </Text>
           <Center className={classes.valueWrap}>
             <Text className={cx('body_1-bold', classes.value)}>
-              {Number(data?.timeframe) / 86400000} ngày
+              {Number(data?.timeframe) / 86400000} {t('FormProject.Day')}
             </Text>
           </Center>
         </Flex>

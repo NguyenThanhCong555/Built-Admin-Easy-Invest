@@ -31,6 +31,8 @@ function Languages({ isShadow }: Props) {
     );
     i18n.changeLanguage(lang);
   };
+
+  console.log(language);
   return (
     <Stack
       className={classes.container}
@@ -39,7 +41,7 @@ function Languages({ isShadow }: Props) {
       }}
     >
       <Flex className={classes.langSelect}>
-        {language === 'en-US' ? <EN /> : <VN />}
+        {language === 'vi-VN' ? <VN /> : <EN />}
         <Text className={cx(classes.selectTex, classes.optionText)}>
           {language === 'en-US' ? 'ENG' : 'VIE'}
         </Text>

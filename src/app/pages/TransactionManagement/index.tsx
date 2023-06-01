@@ -1,7 +1,8 @@
 import React from 'react';
+import { HomePage } from '../HomePage/Loadable';
 
 type Props = {};
 
-export const TransactionManagement = (props: Props) => {
-  return <div>Transaction management</div>;
+export const ProjectManagement = (props: Props) => {
+  return <HomePage projectActive={0}></HomePage>;
 };

@@ -8,3 +8,8 @@ export const StackingPage = lazyLoad(
   () => import('./index'),
   module => module.StackingPage,
 );
+
+export const StakingCoinPage = lazyLoad(
+  () => import('./StakingCoinPage'),
+  module => module.StakingCoinPage,
+);

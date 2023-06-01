@@ -6,15 +6,19 @@ interface ModalSuccessProps {
   title: string;
   opened: boolean;
   setOpened: any;
+  onClose?: any;
 }
 
-const ModalSuccess = memo(({ title, opened, setOpened }: ModalSuccessProps) => {
+const ModalSuccess = memo(({ title, opened, setOpened, onClose }: ModalSuccessProps) => {
   const { classes } = makeStyles();
   return (
     <Modal
       centered
       opened={opened}
-      onClose={() => {}}
+      onClose={() => {
+        setOpened(false);
+        onClose?.();
+      }}
       closeButtonProps={{
         display: 'none',
       }}

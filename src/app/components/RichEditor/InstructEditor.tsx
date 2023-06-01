@@ -1,28 +1,34 @@
 import React from 'react';
 import { Flex, List, Stack, Text, createStyles } from '@mantine/core';
 import { media } from 'styles/media';
+import { useTranslation } from 'react-i18next';
 
 const InstructEditor = () => {
+  const { t } = useTranslation();
   const { classes } = makeStyles();
 
   return (
     <Stack className={classes.stack}>
       <Text className={classes.text}>
-        Chú ý: Kích thước text sẽ giữ nguyên trên giao diện Website và Mobile
+        {t(
+          'InstructEditor.Note The text size will remain the same on the Website and Mobile',
+        )}
       </Text>
       <List>
         <Flex className={classes.flex}>
           <List.Item className={classes.item}>
-            Tiêu đề 1(H1): font size 18
+            {t('InstructEditor.Heading 1(H1) font size 18')}
           </List.Item>
           <List.Item className={classes.item}>
-            Tiêu đề 2(H1): font size 16
+            {t('InstructEditor.Heading 2 font size 16')}
           </List.Item>
         </Flex>
         <Flex className={classes.flex}>
-          <List.Item className={classes.item}>Nội dung: font size 14</List.Item>
           <List.Item className={classes.item}>
-            Nội dung khác: font size 14-16{' '}
+            {t('InstructEditor.Content font size 14')}
+          </List.Item>
+          <List.Item className={classes.item}>
+            {t('InstructEditor.Other content font size 14-16')}
           </List.Item>
         </Flex>
       </List>

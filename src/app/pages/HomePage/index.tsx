@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
@@ -21,36 +21,40 @@ import {
   selectFilterListProject,
   selectListProject,
   selectResponse,
+  selectStatusProject,
 } from 'store/slice/projects/selectors';
+import { images } from 'assets/images';
 
-export function HomePage() {
+export interface IDefaultProject {
+  projectActive?: number;
+}
+
+export function HomePage(props: IDefaultProject) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const typeProject = useSelector(selectStatusProject);
   // Local
   const { t } = useTranslation();
   const { cx, classes } = makeStyles();
   // State
-  const [select, setSelect] = useState<string>('2');
+  const [select, setSelect] = useState<string>(JSON.stringify(typeProject) ?? '0');
   // Func
 
   const calledFirstProjects = useSelector(selectCalledFirstProjects);
-  const projectsNew = useSelector(selectFilterListProject);
   const responseProject = useSelector(selectResponse);
+
+  const listProjects = useSelector(selectListProject);
 
   useEffect(() => {
     if (calledFirstProjects) return;
     dispatch(projectsActions.requestGetAllProjects());
   }, []);
-
-  useEffect(() => {
-    dispatch(projectsActions.filterProject({ select }));
-  }, [select, projectsNew]);
-
   return (
     <>
       <Helmet>
-        <title>HomePage</title>
+        <title>Easy Invest</title>
         <meta name="description" content="A Boilerplate application homepage" />
+        <link rel="icon" href={`${images.logoEasyInvest3}`} />
       </Helmet>
       <Container fluid className={classes.container}>
         <Loading visible={responseProject.loading} />
@@ -72,20 +76,28 @@ export function HomePage() {
                 wrapper: classes.wrapperSelect,
               }}
               value={select}
-              onChange={(value: string) => setSelect(value)}
+              onChange={(value: string) => {
+                setSelect(value);
+                dispatch(projectsActions.changeStatus({ type: value }));
+              }}
             />
-            <FilledButton
-              className={classes.addBtn}
-              onClick={() => navigate('/add')}
-            >
+            <FilledButton className={classes.addBtn} onClick={() => navigate('/add')}>
               {t('Home.Add project')}
             </FilledButton>
           </Flex>
         </div>
         <div className={classes.gird}>
-          {projectsNew?.map(project => (
-            <Project key={project.id} projectId={project.id} data={project} />
-          ))}
+          {listProjects
+            ?.filter((item, _) => {
+              if (select === '2') {
+                return true;
+              } else {
+                return item.state == select;
+              }
+            })
+            .map(project => (
+              <Project key={project.id} projectId={project.id} data={project} />
+            ))}
         </div>
       </Container>
     </>

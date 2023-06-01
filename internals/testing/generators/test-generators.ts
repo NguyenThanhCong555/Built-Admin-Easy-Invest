@@ -173,7 +173,6 @@ function feedbackToUser(info) {
 
 function reportSuccess(message: string) {
   return result => {
-    console.log(chalk.green(` ✓ ${message}`));
     return result;
   };
 }

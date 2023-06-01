@@ -18,6 +18,7 @@ import { formatCoinUS } from 'utils/helpers/formatCoinUs';
 import { projectsActions } from 'store/slice/projects';
 import { translations } from 'locales/translations';
 import { useTranslation } from 'react-i18next';
+import { numberWithCommas } from 'utils/helpers/formatNumberWithCommas';
 interface InPropsStyle {}
 
 export interface IPayloadCreateCoin {
@@ -73,7 +74,6 @@ export const ChangeInfoCoin = () => {
       nav(`/edit-Infocoin/${params.projectId}`);
     }
   };
-
   return (
     <BoxLabel
       frontSize="20px"
@@ -89,42 +89,54 @@ export const ChangeInfoCoin = () => {
         onSubmit={form.onSubmit(values => handleAddEndEditValue(values))}
       >
         <Flex className={c.editform}>
-          <Flex className="formTop">
-            <Text className="topText1">
-              {t('projectDetail.Enter coin name')}
-            </Text>
-            <TextInput
-              className="topIp1"
-              disabled
-              placeholder={data.coinInfo?.coin_name}
-              {...form.getInputProps('coin_name')}
-            />
-          </Flex>
-          <Divider
-            sx={{
-              border: '0.1px solid #ccc8c8',
-              width: '95%',
-              color: '#BFBFBF',
-              marginTop: '8px',
-              marginBottom: '8px',
-            }}
-          />
-          <Flex className="formBottom">
-            <Text className="bottomText2">
-              {t('projectDetail.USDT/COIN Rate')}
-            </Text>
-            <TextInput
-              className="bottomIp2"
-              disabled
-              placeholder={formatCoinUS(data.coinInfo?.rate_usdt_coin)}
-              {...form.getInputProps('rate_usdt_coin')}
-            />
-          </Flex>
+          {data.coinInfo?.coin_name === undefined ? null : (
+            <Flex
+              sx={{
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+              w={'100%'}
+            >
+              <Flex className="formTop">
+                <Text className="topText1">
+                  {t('projectDetail.Enter coin name')}
+                </Text>
+                <TextInput
+                  className="topIp1"
+                  disabled
+                  placeholder={data.coinInfo?.coin_name}
+                  {...form.getInputProps('coin_name')}
+                />
+              </Flex>
+              <Divider
+                sx={{
+                  border: '0.1px solid #ccc8c8',
+                  width: '95%',
+                  color: '#BFBFBF',
+                  marginTop: '8px',
+                  marginBottom: '8px',
+                }}
+              />
+              <Flex className="formBottom">
+                <Text className="bottomText2">
+                  {t('projectDetail.USDT/COIN Rate')}
+                </Text>
+                <TextInput
+                  className="bottomIp2"
+                  disabled
+                  placeholder={numberWithCommas(data.coinInfo?.rate_usdt_coin)}
+                  {...form.getInputProps('rate_usdt_coin')}
+                />
+              </Flex>
+            </Flex>
+          )}
+
           <Box className="fixbottom">
             <FilledButton
               type="submit"
               mb={5}
-              mt={2}
+              mt={20}
               w={135}
               h={36}
               fz={16}

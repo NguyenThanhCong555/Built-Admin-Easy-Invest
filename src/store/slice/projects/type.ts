@@ -1,6 +1,6 @@
 export type ProjectsState = {
   projects: DataProject[];
-  filterProjects: DataProject[];
+  type: number;
 
   calledFirstProjects: boolean;
 
@@ -34,6 +34,8 @@ export type ResponseProject = {
     coin_name?: string;
     min_transfer?: number;
     rate_usdt_coin?: number;
+    purchase_fee?: number;
+    selling_fee?: number;
   };
   author?: {
     name?: string;

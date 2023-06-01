@@ -1,37 +1,43 @@
 import createSagaMiddleware from 'redux-saga';
 import { configureStore } from '@reduxjs/toolkit';
 import rootSaga from './rootSaga';
-import {
-  persistStore,
-  persistReducer,
-  FLUSH,
-  REHYDRATE,
-  PAUSE,
-  PERSIST,
-  PURGE,
-  REGISTER,
-} from 'redux-persist';
+import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import { createReducer } from './reducers';
+import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
+import {
+  bankTransform,
+  profileTransform,
+  projectTransform,
+  requestsTransform,
+  searchTransform,
+  systemTransform,
+  usersTransform,
+} from './tranform';
+import { authActions } from './slice/auth';
+import { systemActions } from './slice/system';
 
 export function configureAppStore() {
-  // const passwordTransform = createTransform(
-  //   (inboundState: AuthState | FilterState, key) => {
-  //     return { ...inboundState };
-  //   },
-  //   (outboundState, key) => {
-  //     return { ...outboundState };
-  //   },
-  //   { whitelist: ['auth, filter', 'location'] },
-  // );
-  const persistConfig = {
+  const persistConfig: any = {
     key: 'admin',
-    version: 1,
+    version: 2,
     storage: storage,
-    // transforms: [passwordTransform],
-    migrate: state => {
+    transforms: [
+      projectTransform,
+      profileTransform,
+      requestsTransform,
+      systemTransform,
+      usersTransform,
+      bankTransform,
+      searchTransform,
+    ],
+    migrate: (state, version) => {
+      if (state && state.system.version < version && state.auth.isLogin) {
+        store.dispatch(authActions.requestLogout());
+      }
       return Promise.resolve(state);
     },
+    stateReconciler: autoMergeLevel2,
   };
 
   const persistedReducer = persistReducer(persistConfig, createReducer());
@@ -47,9 +53,7 @@ export function configureAppStore() {
       }),
       ...middlewares,
     ],
-    devTools:
-      process.env.NODE_ENV !== 'production' ||
-      process.env.PUBLIC_URL.length > 0,
+    devTools: process.env.NODE_ENV !== 'production' || process.env.PUBLIC_URL.length > 0,
   });
 
   sagaMiddleware.run(rootSaga);

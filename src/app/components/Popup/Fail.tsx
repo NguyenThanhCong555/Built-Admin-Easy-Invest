@@ -14,7 +14,9 @@ export const FailPopup = (props: Props) => {
   return (
     <Stack spacing={24} align={'center'}>
       <IconFail width={'80px'} height={'80px'} />
-      <Text className="body-3_regular">{t(props.title)}</Text>
+      <Text align="center" className="body-3_regular">
+        {t(props.title)}
+      </Text>
     </Stack>
   );
 };

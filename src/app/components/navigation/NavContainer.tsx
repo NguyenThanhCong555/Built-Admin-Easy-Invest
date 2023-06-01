@@ -2,7 +2,6 @@ import { Flex, Text, createStyles } from '@mantine/core';
 import React from 'react';
 
 import { ReactComponent as ArrowLeft } from 'assets/icons/loginPage/arrow-narrow-left.svg';
-
 import { media } from 'styles/media';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,13 +11,17 @@ interface InPropsStyle {
   backRole?: string;
   // hide,unhide backpage
   isbackpage?: boolean;
+  isfilter?: boolean;
+  propsFilter?: any;
 }
 export const NavContainer = (props: InPropsStyle) => {
   const { classes: c } = createStyleProps({});
   const nav = useNavigate();
 
   const backPage = () => {
-    nav(`${props.backRole}`);
+    setTimeout(() => {
+      nav(`${props.backRole}`);
+    }, 100);
   };
 
   return (
@@ -34,7 +37,7 @@ export const NavContainer = (props: InPropsStyle) => {
         <Flex className="laberHeader">
           <Text className="textLaberHeader">{props.laberHeader}</Text>
         </Flex>
-        {!props.isbackpage ? <Flex className="iconRight"></Flex> : <></>}
+        {!props.isbackpage ? <Flex className="iconRight">{props.isfilter ? props.propsFilter : <></>}</Flex> : null}
       </Flex>
       <Flex className={c.contentHeader}>
         <Flex className="Content">{props.children}</Flex>
@@ -43,6 +46,11 @@ export const NavContainer = (props: InPropsStyle) => {
   );
 };
 const createStyleProps = createStyles((theme, params: InPropsStyle) => ({
+  boxFilter: {
+    maxWidth: '50px',
+    width: '100%',
+  },
+
   control: {
     maxWidth: '630px',
     width: '100%',
@@ -71,6 +79,7 @@ const createStyleProps = createStyles((theme, params: InPropsStyle) => ({
     overflow: 'hidden',
     '.navheader': {
       maxWidth: '630px',
+      cursor: 'pointer',
       width: '100%',
       height: '48px',
       [`${media.small()}`]: {
@@ -99,6 +108,11 @@ const createStyleProps = createStyles((theme, params: InPropsStyle) => ({
           fontSize: 24,
           fontWeight: 700,
           color: 'rgba(0, 0, 0, 1)',
+          maxWidth: '85%',
+          textAlign: 'center',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
         },
       },
       '.iconRight': {
@@ -106,6 +120,9 @@ const createStyleProps = createStyles((theme, params: InPropsStyle) => ({
         width: '100%',
         height: '100%',
         background: 'transparent',
+        justifyContent: 'center',
+        alignItems: 'center',
+        display: 'flex',
         marginRight: '14px',
       },
     },

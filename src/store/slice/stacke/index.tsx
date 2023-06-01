@@ -53,7 +53,6 @@ const slice = createSlice({
     },
     setLockStake(state, action: PayloadAction<StakeState | any>) {
       const { projectId, data, status } = action.payload;
-      console.log(data, status);
       let existingProduct = state.products?.find(
         product => product?.project_id === projectId,
       );

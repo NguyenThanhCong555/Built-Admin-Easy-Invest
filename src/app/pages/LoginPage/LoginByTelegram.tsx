@@ -3,17 +3,12 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authActions } from 'store/slice/auth';
-import {
-  selectErrorLoginTelegram,
-  selectIsLogin,
-} from 'store/slice/auth/selectors';
+import { selectErrorLoginTelegram, selectIsLogin } from 'store/slice/auth/selectors';
 import { Navigate } from 'react-router-dom';
-import {
-  RESPONSE_ERROR_EXPIRED_OTP,
-  RESPONSE_ERROR_INVALID_OTP,
-} from 'constants/account';
+import { RESPONSE_ERROR_EXPIRED_OTP, RESPONSE_ERROR_INVALID_OTP, RESPONSE_ERROR_LOCKED_ACCOUNT } from 'constants/account';
 import { FailPopup } from 'app/components/Popup/Fail';
 import { RESPONSE_DEFAULT_ERROR } from 'constants/common';
+import ModalLockAccount from 'app/components/Modal/ModalLockAccount';
 
 type Props = {};
 
@@ -42,9 +37,7 @@ export const LoginByTelegram = (props: Props) => {
     <>
       {isLogin === true && <Navigate to={'/'} replace={true} />}
 
-      {responseErrorUser === RESPONSE_DEFAULT_ERROR && (
-        <LoadingOverlay visible={!isLogin} overlayBlur={2} />
-      )}
+      {responseErrorUser === RESPONSE_DEFAULT_ERROR && <LoadingOverlay visible={!isLogin} overlayBlur={2} />}
 
       <Modal
         centered
@@ -57,11 +50,14 @@ export const LoginByTelegram = (props: Props) => {
         <FailPopup title="Link đã hết hạn!" />
       </Modal>
 
+      <ModalLockAccount opened={responseErrorUser === RESPONSE_ERROR_LOCKED_ACCOUNT} type={1} />
+
       <Modal
         centered
         opened={
           responseErrorUser !== RESPONSE_ERROR_EXPIRED_OTP &&
-          responseErrorUser !== RESPONSE_DEFAULT_ERROR
+          responseErrorUser !== RESPONSE_DEFAULT_ERROR &&
+          responseErrorUser !== RESPONSE_ERROR_LOCKED_ACCOUNT
         }
         onClose={() => {
           dispatch(authActions.resetResponseLoginTelegram());

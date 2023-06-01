@@ -9,3 +9,13 @@ export const configDate = (value: any) => {
   const formattedDate = `${day}/${month}/${year}`;
   return formattedDate;
 };
+export const configDateV2 = (value: any) => {
+  const timestamp = value;
+  const date = new Date(timestamp);
+
+  const formattedDate = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} ${date.getDate()}/${
+    date.getMonth() + 1
+  }/${date.getFullYear()}`;
+
+  return formattedDate;
+};

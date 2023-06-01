@@ -40,4 +40,13 @@ export const selectFilterListProject = createSelector(
   state => state.filterProjects,
 );
 
+export const selectStatusProject = createSelector(
+  [selectDomain],
+  state => state.type,
+);
+export const selectIsloading = createSelector(
+  [selectDomain],
+  state => state.isLoading,
+);
+
 // export const selectAuth = createSelector([selectDomain], auth => auth);

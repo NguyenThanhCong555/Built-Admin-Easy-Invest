@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from '@mantine/form';
 import { Box, Flex, Stack, Text, createStyles } from '@mantine/core';
 import SelectLanguage from './SelectLanguage';
@@ -26,6 +26,9 @@ import ModalSuccess from '../Modal/ModalSuccess';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ETypeForm } from './enum';
 import Loading from '../Loading/Loading';
+import { getTextFromHtmlString } from 'utils/helpers/getTextFromHtmlString';
+
+import { ReactComponent as ArrowLeft } from 'assets/icons/loginPage/arrow-narrow-left.svg';
 
 export type TFieldForm = {
   nameProject: string;
@@ -61,8 +64,12 @@ const FormProject = ({ type, data }: FormProjectProps) => {
   const [submit, setSubmit] = useState<boolean>(false);
   const [opened, setOpened] = useState<boolean>(false);
 
+  const [disable, setDisable] = useState<boolean>(false);
+
   const [file, setFile] = useState<TFile>({ src: '' });
   const [files, setFiles] = useState<TFile[]>([]);
+
+  const inputRef = useRef<any>([]);
 
   const responseProject = useSelector(selectResponse);
   const form = useForm({
@@ -78,18 +85,29 @@ const FormProject = ({ type, data }: FormProjectProps) => {
 
     validate: {
       nameProject: value => {
-        if (value.length <= 0 || !value) return 'Vui lòng nhập tên dự án !';
-        if (value.length > 100) return 'Tên dự án không được quá 100 kí tự';
+        if (value.trim().length <= 0 || !value) return t('FormProject.Please enter project name !');
+        if (value.trim().length > 100) return t('FormProject.Project name cannot exceed 100 characters');
         return null;
       },
-
+      publisher: value => {
+        if (value.trim().length <= 0 || !value) return t('FormProject.Please enter publisher name !');
+        if (value.trim().length > 100) return t('FormProject.Publisher name cannot exceed 100 characters');
+        return null;
+      },
       cover_photo: value => {
-        if (value.length <= 0) return 'Vui lòng tải lên ít nhất 1 ảnh';
-        if (value.length > 5) return 'Không được tải quá 5 ảnh';
+        if (value.length <= 0) return t('FormProject.Please upload at least 1 photo !');
+        if (value.length > 5) return t('FormProject.No more than 5 photos can be uploaded');
         return null;
       },
-
-      avatar: value => (!value ? 'Vui lòng tải lên ít nhất 1 ảnh' : null),
+      avatar: value => (!value ? t('FormProject.Please upload at least 1 photo !') : null),
+      vn_description: value => {
+        if (getTextFromHtmlString(value) === '') return t('FormProject.Please enter a description !');
+        return null;
+      },
+      en_description: value => {
+        if (getTextFromHtmlString(value) === '') return t('FormProject.Please enter a description !');
+        return null;
+      },
     },
   });
 
@@ -154,7 +172,6 @@ const FormProject = ({ type, data }: FormProjectProps) => {
   }, [editor?.getHTML()]);
 
   function handleSubmit(values) {
-    setSubmit(true);
     form.resetDirty();
     const payload = {
       name: values.nameProject,
@@ -169,6 +186,7 @@ const FormProject = ({ type, data }: FormProjectProps) => {
       },
       website: values.website,
     };
+
     if (type === ETypeForm.AddProject) {
       dispatch(projectsActions.requestCreateProject(payload));
     } else {
@@ -185,17 +203,13 @@ const FormProject = ({ type, data }: FormProjectProps) => {
 
   useEffect(() => {
     if (submit) {
-      if (
-        responseProject.error === 0 &&
-        responseProject.message === 'success'
-      ) {
+      if (responseProject.error === 0 && responseProject.message === 'success') {
         setOpened(true);
         dispatch(projectsActions.resetResponse());
+        dispatch(projectsActions.resetCalledFirstProjects());
         setTimeout(() => {
           setOpened(false);
-          type === ETypeForm.AddProject
-            ? navigate('/home')
-            : navigate(`/project-details/${projectId}`);
+          type === ETypeForm.AddProject ? navigate('/home') : navigate(`/project-details/${projectId}`);
         }, 1500);
       }
     }
@@ -210,28 +224,58 @@ const FormProject = ({ type, data }: FormProjectProps) => {
 
   const onChangeInput = useCallback(e => {
     if (e.target.value.length > 100) {
-      form.setFieldError('nameProject', 'Tên dự án không được quá 100 kí tự');
+      form.setFieldError('nameProject', t('FormProject.Project name cannot exceed 100 characters'));
     } else {
       form.getInputProps('nameProject').onChange(e.target.value);
     }
   }, []);
 
+  const isObjectEmpty = objectName => {
+    return Object.keys(objectName).length === 0;
+  };
+
+  useEffect(() => {
+    if (!isObjectEmpty(form.errors) && submit) {
+      setSubmit(false);
+      const errorFilter = Object.keys(form.errors).filter((item, _) => item !== 'cover_photo' && item !== 'avatar');
+      if (errorFilter[0] === 'vn_description' || errorFilter[0] === 'en_description') {
+        editor?.chain().focus().run();
+      }
+
+      for (var i = 0; i < inputRef.current.length; i++) {
+        if (inputRef.current[i].getAttribute('data-label') === errorFilter[0]) {
+          inputRef.current[i].focus();
+          break;
+        }
+      }
+    }
+  }, [form.errors]);
+
   return (
     <>
-      <Loading
-        visible={
-          type === ETypeForm.AddProject
-            ? responseProject.loading
-            : responseProject.updating
-        }
-      />
-      <form
-        onSubmit={form.onSubmit(values => handleSubmit(values))}
-        className={classes.form}
-      >
+      <Loading visible={type === ETypeForm.AddProject ? responseProject.loading : responseProject.updating} />
+      <form onSubmit={form.onSubmit(values => handleSubmit(values))} className={classes.form}>
         <Stack className={classes.stackContainer}>
-          <Text className={classes.title}>Thông tin cơ bản</Text>
-          <SelectLanguage value={language} onSelect={handleChangeLanguage} />
+          <Flex className={classes.flexBox}>
+            <Box
+              className={classes.boxIcon}
+              onClick={() => {
+                type === 'add' ? navigate('/home') : navigate(`/project-details/${projectId}`);
+              }}
+            >
+              <ArrowLeft />
+            </Box>
+            <Text className={classes.title}>{t('projectDetail.Basic information')}</Text>
+          </Flex>
+          <SelectLanguage
+            error={
+              form.errors.vn_description || form.errors.en_description
+                ? t('projectDetail.Please enter full description for Vietnamese and English')
+                : false
+            }
+            value={language}
+            onSelect={handleChangeLanguage}
+          />
           <Flex className={classes.flex}>
             <Stack className={classes.stack}>
               <OptimizedInput
@@ -241,12 +285,13 @@ const FormProject = ({ type, data }: FormProjectProps) => {
                 require={true}
                 placeholder={t('FormProject.Enter project name')}
                 onChangeInput={onChangeInput}
+                ref={el => (inputRef.current[0] = el)}
               />
               <OptimizedInput
                 label={t('FormProject.Publisher')}
                 field="publisher"
                 form={form}
-                require={false}
+                require={true}
                 placeholder={t('FormProject.Enter publisher name')}
               />
             </Stack>
@@ -255,8 +300,10 @@ const FormProject = ({ type, data }: FormProjectProps) => {
               file={file}
               setFile={setFile}
               form={form}
+              error={form?.errors?.avatar}
               data={data?.avatar}
               field="avatar"
+              setDisable={setDisable}
             />
           </Flex>
 
@@ -265,9 +312,16 @@ const FormProject = ({ type, data }: FormProjectProps) => {
             files={files}
             setFiles={setFiles}
             form={form}
+            setDisable={setDisable}
           />
           <Box my={10}>
-            <Text className={classes.text}>{t('FormProject.Description')}</Text>
+            <Text className={classes.text}>
+              {t('FormProject.Description')}
+              <Text className={classes.textStar}>{'  *'}</Text>
+              <Text className={classes.textError}>
+                {language === 'vi' ? form?.errors.vn_description : form?.errors.en_description}
+              </Text>
+            </Text>
             <RichEditor editor={editor} />
           </Box>
           <OptimizedInput
@@ -278,8 +332,8 @@ const FormProject = ({ type, data }: FormProjectProps) => {
             placeholder={t('FormProject.Enter website link')}
           />
 
-          <FilledButton type="submit" className={classes.button}>
-            {type === ETypeForm.AddProject ? 'Lưu' : 'Sửa'}
+          <FilledButton type="submit" className={classes.button} onClick={() => setSubmit(true)} disabled={disable}>
+            {type === ETypeForm.AddProject ? t('FormProject.Save') : t('FormProject.Edit')}
           </FilledButton>
         </Stack>
 
@@ -289,9 +343,7 @@ const FormProject = ({ type, data }: FormProjectProps) => {
           opened={opened}
           setOpened={setOpened}
           title={
-            type === ETypeForm.AddProject
-              ? 'Thêm dự án thành công !'
-              : 'Sửa dự án thành công !'
+            type === ETypeForm.AddProject ? t('FormProject.Add successful project !') : t('FormProject.Edit successful project !')
           }
         />
       </form>
@@ -324,10 +376,33 @@ const makeStyles = createStyles(theme => ({
     fontWeight: 600,
   },
 
+  textStar: {
+    display: 'inline',
+    color: '#fa5252',
+  },
+
   title: {
     fontSize: 18,
     fontWeight: 500,
     textAlign: 'center',
+  },
+
+  textError: {
+    color: '#fa5252',
+    fontSize: 12,
+    marginBottom: 3,
+    fontWeight: 500,
+  },
+
+  flexBox: {
+    position: 'relative',
+    justifyContent: 'center',
+    width: '100%',
+  },
+
+  boxIcon: {
+    position: 'absolute',
+    left: 0,
   },
 }));
 

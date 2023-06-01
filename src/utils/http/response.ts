@@ -1,5 +1,8 @@
-export interface BaseResponse {
+export interface ErrorResponse {
   error: number;
   message: string;
-  data: any;
+}
+
+export interface BaseResponse extends ErrorResponse {
+  data?: {};
 }

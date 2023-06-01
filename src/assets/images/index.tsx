@@ -27,5 +27,10 @@ export const images = {
   b4Mobile: require('assets/images/instruct/b4Mobile..svg').default,
   b5Mobile: require('assets/images/instruct/b5Mobile.svg').default,
   b6Mobile: require('assets/images/instruct/b6Mobile.svg').default,
-
+  logoEasyInvest: require('assets/images/homePage/logoEasyInvest.svg').default,
+  logoEasyInvest2: require('assets/images/homePage/logoEasyInvest2.svg')
+    .default,
+  logoEasyInvest3: require('assets/images/homePage/logoEasyInvest3.svg')
+    .default,
+  People3: require('assets/images/profilePage/people-3.svg').default,
 };

@@ -7,8 +7,10 @@ export const initialState: AuthState = {
   token: '',
   refreshToken: '',
   refreshToken_time: 0,
+  role: -1,
+  status: -1,
   username: '',
-  language: 'en-US',
+  language: 'vi-VN',
   isLogin: false,
   isMobile: false,
   isAuthen: false,
@@ -59,6 +61,8 @@ const slice = createSlice({
       state.username = action.payload.username;
       state.refreshToken = action.payload.refreshToken;
       state.refreshToken_time = action.payload.refreshToken_time;
+      state.role = action.payload.role;
+      state.status = action.payload.status;
     },
     loginByOtpFail(state, action: PayloadAction<any>) {
       state.isLoading = false;
@@ -111,17 +115,11 @@ const slice = createSlice({
       state.response.errorLoginTelegram = -1;
       state.response.messageLoginTelegram = '';
     },
-    setResponseUser(
-      state: AuthState,
-      action: PayloadAction<{ error: number; message: string }>,
-    ) {
+    setResponseUser(state: AuthState, action: PayloadAction<{ error: number; message: string }>) {
       state.response.errorLoginTelegram = action.payload.error;
       state.response.messageLoginTelegram = action.payload.message;
     },
-    requestLoginDirectlyTelegram(
-      state: AuthState,
-      action: PayloadAction<{ id: string; token: string }>,
-    ) {},
+    requestLoginDirectlyTelegram(state: AuthState, action: PayloadAction<{ id: string; token: string }>) {},
   },
 });
 

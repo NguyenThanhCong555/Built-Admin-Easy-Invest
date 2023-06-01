@@ -1,0 +1,24 @@
+@font-face {
+  font-family: 'Sarabun';
+  src: local('SarabunRegular'),
+    url('../assets/fonts/Sarabun-Regular.ttf') format('truetype');
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'Sarabun';
+  src: local('SarabunMedium'),
+    url('../assets/fonts/Sarabun-Medium.ttf') format('truetype');
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: 'Sarabun';
+  src: local('SarabunBold'), url('../assets/fonts/Sarabun-Bold.ttf');
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: 'Sarabun';
+  src: local('SarabunSemiBold'), url('../assets/fonts/Sarabun-SemiBold.ttf');
+  font-weight: 600;
+}

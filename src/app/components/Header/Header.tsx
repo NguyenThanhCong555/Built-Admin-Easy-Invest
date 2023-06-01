@@ -1,27 +1,31 @@
-import React, { useState } from 'react';
-import {
-  Avatar,
-  Center,
-  Container,
-  Flex,
-  Group,
-  Text,
-  createStyles,
-} from '@mantine/core';
+import React, { useEffect, useState } from 'react';
+import { Avatar, Center, Container, Flex, Group, Text, createStyles } from '@mantine/core';
 
 import { images } from 'assets/images';
 import { SubtleButton } from '../Button/SubtleButton';
 import { ReactComponent as MenuIcon } from 'assets/icons/homePage/menu.svg';
 import { ReactComponent as Bell } from 'assets/icons/homePage/bell.svg';
-import Menu from '../Menu/Menu';
+import Menu from './Menu/Menu';
 import { media } from 'styles/media';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectCalledProfile } from 'store/slice/profile/selector';
+import { profileActions } from 'store/slice/profile';
 
 const Header = () => {
   const { classes } = makeStyles();
+  const dispatch = useDispatch();
+
   // State
   const [isShow, setIsShow] = useState<boolean>(false);
   const nav = useNavigate();
+
+  const calledProfile = useSelector(selectCalledProfile);
+  useEffect(() => {
+    if (!calledProfile) {
+      dispatch(profileActions.requestGetProfile());
+    }
+  }, []);
   return (
     <Container fluid className={classes.container}>
       <Menu showState={[isShow, setIsShow]} />
@@ -32,9 +36,7 @@ const Header = () => {
         <Avatar
           src={images.banner}
           onClick={() => {
-            {
-              nav('/');
-            }
+            nav('/home');
           }}
           classNames={{
             root: classes.rootAvatar,
@@ -88,6 +90,7 @@ const makeStyles = createStyles(theme => ({
   },
   notificationWrap: {
     position: 'relative',
+    opacity: 0,
     padding: 10,
   },
   notificationBtn: {
